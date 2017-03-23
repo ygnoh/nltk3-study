@@ -181,4 +181,77 @@ Conditional frequency distributions are a useful data structure for many NLP tas
 
 ## 3.3 Modules
 
-# 
+# 4 Lexical Resources
+
+A lexicon, or lexical resource, is a collection of words and/or phrases along with associated information such as part of speech and sense definitions.
+
+Lexical resources are secondary to texts, and are usually created and enriched with the help of texts.
+
+For example, if we have defined a text `my_text`, then `vocab = sorted(set(my_text))` builds the vocabulary of `my_text`, while `word_freq = FreqDist(my_text)` counts the frequency of each word in the text. Both of `vocab` and `word_freq` are simple lexical resources.
+
+A lexical entry consists of a headword (also known as a lemma) along with additional information such as the part of speech and the sense definition. Two distinct words having the same spelling are called homonyms.
+
+
+## 4.1 Wordlist Corpora
+
+NLTK includes some corpora that are nothing more than wordlists.
+
+We can use it to find unusual or mis-spelt words in a text corpus:
+
+```python
+def unusual_words(text):
+    text_vocab = set(w.lower() for w in text if w.isalpha())
+    english_vocab = set(w.lower() for w in nltk.corpus.words.words())
+    unusual = text_vocab - english_vocab
+    return sorted(unusual)
+
+>>> unusual_words(nltk.corpus.gutenberg.words('austen-sense.txt'))
+['abbeyland', 'abhorred', 'abilities', 'abounded', 'abridgement', 'abused', 'abuses', 'accents', ...]
+>>> unusual_words(nltk.corpus.nps_chat.words())
+['aaaaaaaaaaaaaaaaa', 'aaahhhh', 'abortions', 'abou', 'abourted', 'abs', ...]
+```
+
+Stopwords usually have little lexical content, and their presence in a text fails to distinguish it from other texts.
+
+stopword: 색인 시에 도움이 되지 않는 단어들. (the, a, also 등)
+
+Let's define a function to compute what fraction of words in a text are not in the stopwords list:
+
+```python
+>>> def content_fraction(text):
+...     stopwords = nltk.corpus.stopwords.words('english')
+...     content = [w for w in text if w.lower() not in stopwords]
+...     return len(content) / len(text)
+...
+>>> content_fraction(nltk.corpus.reuters.words())
+0.7364374824583169
+```
+
+Thus, with the help of stopwords we filter out over a quarter of the words of the text.
+
+Word Puzzle: How many words of four letters or more can you make from those shown her? Each letter may be used once per word. Each word must contain the center letter and there must be at least one nine-letter word. No plurals ending in "s"; no foreign words; no proper names.
+
+A wordlist is useful for solving word puzzles.
+
+It is trickier to check that candidate solutions only use combinations of the supplied letters, especially since some of the supplied letters appear twice (here, the letter v). The FreqDist comparison method [3] permits us to check that the frequency of each letter in the candidate word is less than or equal to the frequency of the corresponding letter in the puzzle.
+
+```python
+>>> puzzle_letters = nltk.FreqDist('egivrvonl')
+>>> obligatory = 'r'
+>>> wordlist = nltk.corpus.words.words()
+>>> [w for w in wordlist if len(w) >= 6
+... 	and obligatory in w
+...		and nltk.FreqDist(w) <= puzzle_letters]
+['glover', 'gorlin', 'govern',...]
+```
+
+It is well known that names ending in the letter a are almost always female. We can see this and some other patterns in the graph in 4.4, produced by the following code. Remember that name[-1] is the last letter of name.
+
+```python
+>>> cfd = nltk.ConditionalFreqDist(
+...           (fileid, name[-1])
+...           for fileid in names.fileids()
+...           for name in names.words(fileid))
+>>> cfd.plot()
+```
+
