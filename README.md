@@ -1,3 +1,5 @@
+# 1. Language Processing and Python
+
 * text.concordance("word")
  word가 등장한 문장을 검색한다.
 * text.similar("word")
@@ -21,7 +23,7 @@
  누적 분포 그래프를 그린다. 50위까지.
 * hapaxes
  텍스트에서 한번만 등장하는 단어.
-
+ 
 * collocation
  함께 자주 쓰이는 단어들의 결합 ex. red wine
  => 의미가 비슷한 다른 단어와 대체되지 않는다는 특징이 있다. ex. marron(고동색) wine은 잘 쓰이지 않는다.
@@ -33,6 +35,11 @@
  특히, 우리가 각각의 단어들의 빈도수를 토대로 하여 예측하는 것보다 더 자주 발생하는 bigram을 찾기 원한다.
 * text.collocations()
  위의 내용을 처리해주는 함수.
+
+
+# 2. Accessing Text Corpora and Lexical Resources
+
+## 1 Accessing Text Corpora
 
 ```python
 from nltk.corpus import brown
@@ -54,18 +61,18 @@ Next, we need to obtain counts for each genre of interest.
 >>> cfd.tabulate(conditions=genres, samples=modals)
 ```
 
-# 2 Conditional Frequency Distributions
+## 2 Conditional Frequency Distributions
 
 When the texts of a corpus are divided into several categories, by genre, topic, author, etc, we can maintain separate frequency distributions for each category.
 
 A conditional frequency distribution is a collection of frequency distributions, each one for a different "condition". The condition will often be the category of the text.
 
-## 2.1 Conditions and Events
+### 2.1 Conditions and Events
 A conditional frequency distribution needs to pair each event with a condition.
 
 Each pair has the form *(condition, event)*.
 
-## 2.2 Coundting Words by Genre
+### 2.2 Coundting Words by Genre
 
 Whereas FreqDist() takes a simple list as input, ConditionalFreqDist() takes a list of pairs.
 
@@ -98,7 +105,7 @@ _ConditionalFreqDist()_ 는 해당 condition에 따른 event들의 발생 빈도
 193
 ```
 
-## 2.3 Plotting and Tabulating Distributions
+### 2.3 Plotting and Tabulating Distributions
 
 a ConditionalFreqDist provides some useful methods for tabulation and plotting.
 
@@ -148,7 +155,7 @@ German_Deutsch    0  171  263  614  717  894 1013 1110 1213 1275
 각 언어로서 쓰여진 Human right ... 문서를 단어수 별로 tabulate해서 보여준다.
 
 
-## 2.4 Generating Random Text with Bigrams
+### 2.4 Generating Random Text with Bigrams
 
 We can use a conditional frequency distribution to create a table of bigrams (word pairs). The bigrams() function takes a list of words and builds a list of consecutive word pairs.
 
@@ -173,15 +180,15 @@ living creature that he said , and the land of the land of the land
 Conditional frequency distributions are a useful data structure for many NLP tasks. Their commonly-used methods are summarized in 2.1.
 
 
-# 3 More Python: Reusing Code
+## 3 More Python: Reusing Code
 
-## 3.1 Creating Programs with a Text Editor
+### 3.1 Creating Programs with a Text Editor
 
-## 3.2 Functions
+### 3.2 Functions
 
-## 3.3 Modules
+### 3.3 Modules
 
-# 4 Lexical Resources
+## 4 Lexical Resources
 
 A lexicon, or lexical resource, is a collection of words and/or phrases along with associated information such as part of speech and sense definitions.
 
@@ -192,7 +199,7 @@ For example, if we have defined a text `my_text`, then `vocab = sorted(set(my_te
 A lexical entry consists of a headword (also known as a lemma) along with additional information such as the part of speech and the sense definition. Two distinct words having the same spelling are called homonyms.
 
 
-## 4.1 Wordlist Corpora
+### 4.1 Wordlist Corpora
 
 NLTK includes some corpora that are nothing more than wordlists.
 
@@ -255,7 +262,7 @@ It is well known that names ending in the letter **a** are almost always female.
 >>> cfd.plot()
 ```
 
-## 4.2 A pronouncing Dictionary
+### 4.2 A pronouncing Dictionary
 
 A slightly richer kind of lexical resource is a table (or spreadsheet), containing a word plus some properties in each row. NLTK includes the CMU Pronouncing Dictionary for US English, which was designed for use by speech synthesizers.
 
@@ -344,7 +351,7 @@ KeyError: 'blog'
 ```
 
 
-## 4.3 Comparative Wordlists
+### 4.3 Comparative Wordlists
 
 NLTK includes so-called Swadesh wordlists, lists of about 200 common words in several languages. The languages are identified using an ISO 639 two-letter code.
 
@@ -363,13 +370,13 @@ We can access cognate words from multiple languages using the entries() method, 
 ```
 
 
-## 4.4 Shoebox and Toolbox Lexicons
+### 4.4 Shoebox and Toolbox Lexicons
 
-# 5 WordNet
+## 5 WordNet
 
 WordNet is a semantically-oriented dictionary of English, similar to a traditional thesaurus but with a richer structure.
 
-## 5.1 Senses and Synonyms(의미와 유의어)
+### 5.1 Senses and Synonyms(의미와 유의어)
 
 Consider the sentence in (1a). If we replace the word *motorcar* in (1a) by *automobile*, to get (1b), the meaning of the sentence stays pretty much the same:
 
@@ -441,7 +448,7 @@ For convenience, we can access all the lemmas involving the word car as follows.
 **`synsets(word)`는 word가 속한(이름이 word인 lemma를 포함하는) synset들을 리턴하고, `synset(name)`은 'name'이라는 synset을 접근하도록 하며, `lemma(word)`는 word를 이름으로 가지는 lemma들을 리턴한다.**
 
 
-## 5.2 The WordNet Hierarchy
+### 5.2 The WordNet Hierarchy
 
 WordNet synsets correspond to abstract concepts, and they don't always have corresponding words in English. These concepts are linked together in a hierarchy.
 
@@ -477,7 +484,7 @@ We can get the most general hypernyms (or root hypernyms) of a synset as follows
 [Synset('entity.n.01')]
 ```
 
-## 5.3 More Lexical Relations
+### 5.3 More Lexical Relations
 
 Hypernyms and hyponyms are called **lexical relations** because they relate one synset to another.
 Another important way to navigate the WordNet network is from items to their components (**meronyms**) or to the things they are contained in (**holonyms**).
@@ -490,7 +497,7 @@ For example, the parts of a tree are its trunk, crown, and so on; the `part_mero
 >>> for synset in wn.synsets('mint', wn.NOUN):
 ...     print(synset.name() + ':', synset.definition())
 ...
-batch.n.02: (often followed by `of') a large number or amount or extent
+batch.n.02: (often followed by 'of') a large number or amount or extent
 mint.n.02: any north temperate plant of the genus Mentha with aromatic leaves and small mauve flowers
 mint.n.03: any member of the mint family of plants
 mint.n.04: the leaves of a mint plant used fresh or candied
@@ -502,6 +509,83 @@ mint.n.06: a plant where money is coined by authority of the government
 [Synset('mint.n.05')]
 ```
 
-There are also relationships between verbs. For example, the act of walking involves the act of stepping, so walking entails stepping.
+There are also relationships between verbs. For example, the act of walking involves the act of stepping, so walking **entails** stepping. Some verbs have multiple entailments:
+
+```python
+>>> wn.synset('walk.v.01').entailments()
+[Synset('step.v.01')]
+```
+
+Some lexical relationships hold between lemmas, e.g., **antonymy**(반의어):
+
+```python
+>>> wn.lemma('horizontal.a.01.horizontal').antonyms()
+[Lemma('inclined.a.02.inclined'), Lemma('vertical.a.01.vertical')]
+```
+
+You can see the lexical relations, and the other methods defined on a synset, using dir(), for example: dir(wn.synset('harmony.n.02')).
 
 
+### 5.4 Semantic Similarity
+
+Given a particular synset, we can traverse the WordNet network to find synsets with related meanings.
+
+Knowing which words are semantically related is useful for indexing a collection of texts, so that a search for a general term like vehicle will match documents containing specific terms like limousine.
+
+If two synsets share a very specific hypernym — one that is low down in the hypernym hierarchy — they must be closely related.
+
+```python
+>>> right = wn.synset('right_whale.n.01') # 수염 고랫과 고래
+>>> orca = wn.synset('orca.n.01') # killer whale
+>>> minke = wn.synset('minke_whale.n.01') # 긴수염고래속의 소형 고래
+>>> tortoise = wn.synset('tortoise.n.01') # 거북
+>>> novel = wn.synset('novel.n.01') # 소설
+>>> right.lowest_common_hypernyms(minke)
+[Synset('baleen_whale.n.01')] # 수염고래
+>>> right.lowest_common_hypernyms(orca)
+[Synset('whale.n.02')] # 고래
+>>> right.lowest_common_hypernyms(tortoise)
+[Synset('vertebrate.n.01')] # 척추 동물
+>>> right.lowest_common_hypernyms(novel)
+[Synset('entity.n.01')] # 실재하는 것
+```
+
+We can quantify this concept of generality by looking up the depth of each synset:
+
+```python
+>>> wn.synset('baleen_whale.n.01').min_depth()
+14
+>>> wn.synset('whale.n.02').min_depth()
+13
+>>> wn.synset('vertebrate.n.01').min_depth()
+8
+>>> wn.synset('entity.n.01').min_depth()
+0
+```
+
+For example, path_similarity assigns a score in the range  0–1 based on the shortest path that connects the concepts in the hypernym hierarchy (-1 is returned in those cases where a path cannot be found).
+
+```python
+>>> right.path_similarity(minke)
+0.25
+>>> right.path_similarity(orca)
+0.16666666666666666
+>>> right.path_similarity(tortoise)
+0.07692307692307693
+>>> right.path_similarity(novel)
+0.043478260869565216
+```
+
+Several other similarity measures are available; you can type help(wn) for more information.
+
+
+## 6 Summary
+
+## 7 Further Reading
+
+Extra materials for this chapter are posted at http://nltk.org/, including links to freely available resources on the web. The corpus methods are summarized in the Corpus HOWTO, at http://nltk.org/howto, and documented extensively in the online API documentation.
+
+## 8 Exercises
+
+
+# 3. Processing Raw Test
