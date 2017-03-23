@@ -63,7 +63,7 @@ A conditional frequency distribution is a collection of frequency distributions,
 ## 2.1 Conditions and Events
 A conditional frequency distribution needs to pair each event with a condition.
 
-Each pair has the form _(condition, event)_.
+Each pair has the form *(condition, event)*.
 
 ## 2.2 Coundting Words by Genre
 
@@ -374,6 +374,7 @@ WordNet is a semantically-oriented dictionary of English, similar to a tradition
 Consider the sentence in (1a). If we replace the word *motorcar* in (1a) by *automobile*, to get (1b), the meaning of the sentence stays pretty much the same:
 
 (1a) Benz is credited with the invention of the *motorcar*.
+
 (1b) Benz is credited with the invention of the *automobile*.
 
 Since everything else in the sentence has remained unchanged, we can conclude that the words motorcar and automobile have the same meaning, i.e. they are synonyms. We can explore these words with the help of WordNet:
@@ -384,7 +385,7 @@ Since everything else in the sentence has remained unchanged, we can conclude th
 [Synset('car.n.01')]
 ```
 
-Thus, motorcar has just one possible meaning and it is identified as car.n.01, the first noun sense of car. The entity car.n.01 is called a synset, or "synonym set", a collection of synonymous words (or "lemmas"):
+Thus, motorcar has just one possible meaning and it is identified as car.n.01, the first noun sense of car. The entity car.n.01 is called **a synset, or "synonym set", a collection of synonymous words (or "lemmas")**:
 
 ```python
 >>> wn.synset('car.n.01').lemma_names()
@@ -399,3 +400,108 @@ Each word of a synset can have several meanings. However, we are only interested
 >>> wn.synset('car.n.01').examples()
 ['he needs a car to get to work']
 ```
+
+The words of the synset are often more useful for our programs. To eliminate ambiguity, we will identify these words as car.n.01.automobile, car.n.01.motorcar, and so on. This pairing of a synset with a word is called a lemma.
+
+```python
+>>> wn.synset('car.n.01').lemmas()
+[Lemma('car.n.01.car'), Lemma('car.n.01.auto'), Lemma('car.n.01.automobile'),
+Lemma('car.n.01.machine'), Lemma('car.n.01.motorcar')]
+>>> wn.lemma('car.n.01.automobile')
+Lemma('car.n.01.automobile')
+>>> wn.lemma('car.n.01.automobile').synset()
+Synset('car.n.01')
+>>> wn.lemma('car.n.01.automobile').name()
+'automobile'
+```
+
+Unlike the word motorcar, which is unambiguous and has one synset, the word car is ambiguous, having five synsets:
+
+```python
+>>> wn.synsets('car')
+[Synset('car.n.01'), Synset('car.n.02'), Synset('car.n.03'), Synset('car.n.04'),
+Synset('cable_car.n.01')]
+>>> for synset in wn.synsets('car'):
+...     print(synset.lemma_names())
+...
+['car', 'auto', 'automobile', 'machine', 'motorcar']
+['car', 'railcar', 'railway_car', 'railroad_car']
+['car', 'gondola']
+['car', 'elevator_car']
+['cable_car', 'car']
+```
+
+For convenience, we can access all the lemmas involving the word car as follows.
+
+```python
+>>> wn.lemmas('car')
+[Lemma('car.n.01.car'), Lemma('car.n.02.car'), Lemma('car.n.03.car'), Lemma('car.n.04.car'), Lemma('cable_car.n.01.car')]
+```
+
+**`synsets(word)`는 word가 속한(이름이 word인 lemma를 포함하는) synset들을 리턴하고, `synset(name)`은 'name'이라는 synset을 접근하도록 하며, `lemma(word)`는 word를 이름으로 가지는 lemma들을 리턴한다.**
+
+
+## 5.2 The WordNet Hierarchy
+
+WordNet synsets correspond to abstract concepts, and they don't always have corresponding words in English. These concepts are linked together in a hierarchy.
+
+WordNet makes it easy to navigate between concepts. For example, given a concept like motorcar, we can look at the concepts that are more specific; the (immediate) hyponyms.
+
+```python
+>>> motorcar = wn.synset('car.n.01')
+>>> types_of_motorcar = motorcar.hyponyms()
+>>> types_of_motorcar[0]
+Synset('ambulance.n.01')
+>>> sorted(lemma.name() for synset in types_of_motorcar for lemma in synset.lemmas())
+['Model_T', 'S.U.V.', 'SUV', 'Stanley_Steamer', 'ambulance', 'beach_waggon', 'beach_wagon', 'bus', 'cab', 'compact', 'compact_car', 'convertible', ...]
+```
+
+We can also navigate up the hierarchy by visiting hypernyms. Some words have multiple paths, because they can be classified in more than one way.
+
+```python
+>>> motorcar.hypernyms()
+[Synset('motor_vehicle.n.01')]
+>>> paths = motorcar.hypernym_paths()
+>>> len(paths)
+2
+>>> [synset.name() for synset in paths[0]]
+['entity.n.01', 'physical_entity.n.01', 'object.n.01', 'whole.n.02', 'artifact.n.01', ...]
+>>> [synset.name() for synset in paths[1]]
+['entity.n.01', 'physical_entity.n.01', 'object.n.01', 'whole.n.02', 'artifact.n.01', ...]
+```
+
+We can get the most general hypernyms (or root hypernyms) of a synset as follows:
+
+```python
+>>> motorcar.root_hypernyms()
+[Synset('entity.n.01')]
+```
+
+## 5.3 More Lexical Relations
+
+Hypernyms and hyponyms are called **lexical relations** because they relate one synset to another.
+Another important way to navigate the WordNet network is from items to their components (**meronyms**) or to the things they are contained in (**holonyms**).
+
+나무는 뿌리의 *holonym*이고 뿌리는 나무의 *meronym*이다.
+
+For example, the parts of a tree are its trunk, crown, and so on; the `part_meronyms()`. The substance a tree is made of includes heartwood and sapwood; the `substance_meronyms()`. A collection of trees forms a forest; the `member_holonyms()`:
+
+```python
+>>> for synset in wn.synsets('mint', wn.NOUN):
+...     print(synset.name() + ':', synset.definition())
+...
+batch.n.02: (often followed by `of') a large number or amount or extent
+mint.n.02: any north temperate plant of the genus Mentha with aromatic leaves and small mauve flowers
+mint.n.03: any member of the mint family of plants
+mint.n.04: the leaves of a mint plant used fresh or candied
+mint.n.05: a candy that is flavored with a mint oil
+mint.n.06: a plant where money is coined by authority of the government
+>>> wn.synset('mint.n.04').part_holonyms()
+[Synset('mint.n.02')]
+>>> wn.synset('mint.n.04').substance_holonyms()
+[Synset('mint.n.05')]
+```
+
+There are also relationships between verbs. For example, the act of walking involves the act of stepping, so walking entails stepping.
+
+
