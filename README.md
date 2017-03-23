@@ -77,7 +77,7 @@ Whereas FreqDist() takes a simple list as input, ConditionalFreqDist() takes a l
 ...           for word in brown.words(categories=genre))
 ```
 
-_ConditionalFreqDist()_는 해당 condition에 따른 event들의 발생 빈도를 저장하고 있는다.
+_ConditionalFreqDist()_ 는 해당 condition에 따른 event들의 발생 빈도를 저장하고 있는다.
 즉, `condition => {event1: n1, event2: n2, ...}`
 
 ```python
@@ -242,10 +242,10 @@ It is trickier to check that candidate solutions only use combinations of the su
 >>> [w for w in wordlist if len(w) >= 6
 ... 	and obligatory in w
 ...		and nltk.FreqDist(w) <= puzzle_letters]
-['glover', 'gorlin', 'govern',...]
+['glover', 'gorlin', 'govern', ...]
 ```
 
-It is well known that names ending in the letter a are almost always female. We can see this and some other patterns in the graph in 4.4, produced by the following code. Remember that name[-1] is the last letter of name.
+It is well known that names ending in the letter **a** are almost always female. We can see this and some other patterns in the graph in 4.4, produced by the following code. Remember that name[-1] is the last letter of name.
 
 ```python
 >>> cfd = nltk.ConditionalFreqDist(
@@ -255,3 +255,147 @@ It is well known that names ending in the letter a are almost always female. We 
 >>> cfd.plot()
 ```
 
+## 4.2 A pronouncing Dictionary
+
+A slightly richer kind of lexical resource is a table (or spreadsheet), containing a word plus some properties in each row. NLTK includes the CMU Pronouncing Dictionary for US English, which was designed for use by speech synthesizers.
+
+```python
+>>> entries = nltk.corpus.cmudict.entries()
+>>> len(entries)
+133737
+>>> for entry in entries[42371:42379]:
+...     print(entry)
+...
+('fir', ['F', 'ER1'])
+('fire', ['F', 'AY1', 'ER0'])
+('fire', ['F', 'AY1', 'R'])
+('firearm', ['F', 'AY1', 'ER0', 'AA2', 'R', 'M'])
+```
+
+Observe that fire has two pronunciations (in US English): the one-syllable F AY1 R, and the two-syllable F AY1 ER0. The symbols in the CMU Pronouncing Dictionary are from the Arpabet, described in more detail at  http://en.wikipedia.org/wiki/Arpabet
+
+```python
+>>> for word, pron in entries: [1]
+...     if len(pron) == 3: [2]
+...         ph1, ph2, ph3 = pron [3]
+...         if ph1 == 'P' and ph3 == 'T':
+...             print(word, ph2, end=' ')
+...
+pait EY1 pat AE1 pate EY1 patt AE1 peart ER1 peat IY1 peet IY1 peete IY1 pert ER1
+pet EH1 pete IY1 pett EH1 piet IY1 piette IY1 pit IH1 pitt IH1 pot AA1 pote OW1
+pott AA1 pout AW1 puett UW1 purt ER1 put UH1 putt AH1
+```
+
+Can you summarize the purpose of the following examples and explain how they work?
+
+```python
+>>> [w for w, pron in entries if pron[-1] == 'M' and w[-1] == 'n']
+['autumn', 'column', 'condemn', 'damn', 'goddamn', 'hymn', 'solemn']
+>>> sorted(set(w[:2] for w, pron in entries if pron[0] == 'N' and w[0] != 'n'))
+['gn', 'kn', 'mn', 'pn']
+```
+
+묵음을 체크하는 듯 하다.
+
+The phones contain digits to represent primary stress (1), secondary stress (2) and no stress (0).
+
+As our final example, we define a function to extract the stress digits and then scan our lexicon to find words having a particular stress pattern.
+
+```python
+>>> def stress(pron):
+...     return [char for phone in pron for char in phone if char.isdigit()]
+>>> [w for w, pron in entries if stress(pron) == ['0', '1', '0', '2', '0']]
+['abbreviated', 'abbreviated', 'abbreviating', 'accelerated', 'accelerating', ...]
+>>> [w for w, pron in entries if stress(pron) == ['0', '2', '0', '1', '0']]
+['abbreviation', 'abbreviations', 'abomination', 'abortifacient', 'abortifacients', ...]
+```
+
+We can use a conditional frequency distribution to help us find minimally-contrasting sets of words.
+
+```python
+>>> p3 = [(pron[0]+'-'+pron[2], word) [1]
+...       for (word, pron) in entries
+...       if pron[0] == 'P' and len(pron) == 3] [2]
+>>> cfd = nltk.ConditionalFreqDist(p3)
+>>> for template in sorted(cfd.conditions()):
+...     if len(cfd[template]) > 10:
+...         words = sorted(cfd[template])
+...         wordstring = ' '.join(words)
+...         print(template, wordstring[:70] + "...")
+...
+P-CH patch pautsch peach perch petsch...
+P-K pac pack paek paik pak pake paque...
+P-L pahl pail paille pal pale pall paul...
+```
+
+Rather than iterating over the whole dictionary, we can also access it by looking up particular words.
+
+```python
+>>> prondict = nltk.corpus.cmudict.dict()
+>>> prondict['fire']
+[['F', 'AY1', 'ER0'], ['F', 'AY1', 'R']]
+>>> prondict['blog']
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+KeyError: 'blog'
+>>> prondict['blog'] = [['B', 'L', 'AA1', 'G']]
+>>> prondict['blog']
+[['B', 'L', 'AA1', 'G']]
+```
+
+
+## 4.3 Comparative Wordlists
+
+NLTK includes so-called Swadesh wordlists, lists of about 200 common words in several languages. The languages are identified using an ISO 639 two-letter code.
+
+We can access cognate words from multiple languages using the entries() method, specifying a list of languages. With one further step we can convert this into a simple dictionary.
+
+```python
+>>> from nltk.corpus import swadesh
+>>> fr2en = swadesh.entries(['fr', 'en'])
+>>> fr2en
+[('je', 'I'), ('tu, vous', 'you (singular), thou'), ('il', 'he'), ...]
+>>> translate = dict(fr2en) # convert to dict type
+>>> translate['chien']
+'dog'
+>>> translate['jeter']
+'throw'
+```
+
+
+## 4.4 Shoebox and Toolbox Lexicons
+
+# 5 WordNet
+
+WordNet is a semantically-oriented dictionary of English, similar to a traditional thesaurus but with a richer structure.
+
+## 5.1 Senses and Synonyms(의미와 유의어)
+
+Consider the sentence in (1a). If we replace the word *motorcar* in (1a) by *automobile*, to get (1b), the meaning of the sentence stays pretty much the same:
+
+(1a) Benz is credited with the invention of the *motorcar*.
+(1b) Benz is credited with the invention of the *automobile*.
+
+Since everything else in the sentence has remained unchanged, we can conclude that the words motorcar and automobile have the same meaning, i.e. they are synonyms. We can explore these words with the help of WordNet:
+
+```python
+>>> from nltk.corpus import wordnet as wn
+>>> wn.synsets('motorcar')
+[Synset('car.n.01')]
+```
+
+Thus, motorcar has just one possible meaning and it is identified as car.n.01, the first noun sense of car. The entity car.n.01 is called a synset, or "synonym set", a collection of synonymous words (or "lemmas"):
+
+```python
+>>> wn.synset('car.n.01').lemma_names()
+['car', 'auto', 'automobile', 'machine', 'motorcar']
+```
+
+Each word of a synset can have several meanings. However, we are only interested in the single meaning that is common to all words of the above synset. Synsets also come with a prose definition and some example sentences:
+
+```python
+>>> wn.synset('car.n.01').definition()
+'a motor vehicle with four wheels; usually propelled by an internal combustion engine'
+>>> wn.synset('car.n.01').examples()
+['he needs a car to get to work']
+```
